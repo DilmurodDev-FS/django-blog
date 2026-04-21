@@ -1,0 +1,51 @@
+{% extends 'blog/base.html' %}
+
+{% block content %}
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h1>{{ post.title }}</h1>
+        <p class="text-muted small">
+            By {{ post.author.username }} • {{ post.created_date|date:"M d, Y H:i" }}
+        </p>
+        <p class="mt-4">{{ post.content|linebreaks }}</p>
+
+        {% if user == post.author %}
+            <a href="{% url 'post_update' post.pk %}" class="btn btn-warning btn-sm">Edit</a>
+            <a href="{% url 'post_delete' post.pk %}" class="btn btn-danger btn-sm">Delete</a>
+        {% endif %}
+        <a href="{% url 'post_list' %}" class="btn btn-secondary btn-sm">Back</a>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <h3>Comments ({{ post.comments.count }})</h3>
+        <hr>
+        {% for comment in post.comments.all %}
+            <div class="mb-3">
+                <p class="mb-1"><strong>{{ comment.author.username }}</strong></p>
+                <p class="text-muted small mb-1">{{ comment.created_date|date:"M d, Y H:i" }}</p>
+                <p>{{ comment.content|linebreaks }}</p>
+            </div>
+            {% if not forloop.last %}<hr>{% endif %}
+        {% empty %}
+            <p class="text-muted">No comments yet.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <h3>Add Comment</h3>
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'add_comment' post.pk %}">
+                {% csrf_token %}
+                {{ comment_form.as_p }}
+                <button type="submit" class="btn btn-primary">Post Comment</button>
+            </form>
+        {% else %}
+            <p>You need to <a href="{% url 'login' %}">log in</a> to comment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
